@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>끝나지 않는 야간 근무</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div id="clock"><span class="ampm">AM</span>03<span id="colon">:</span>33</div>
+  <div id="zone">1구역 · 평범한 매장</div>
+</div>
+<div id="fps"></div>
+<div id="crosshair"></div>
+<div id="prompt"></div>
+<div id="message"></div>
+
+<div id="touch">
+  <div id="joyZone"></div>
+  <div id="joyBase"><div id="joyKnob"></div></div>
+  <div id="lookZone"></div>
+  <div id="btns">
+    <button id="btnRun" class="tbtn">뛰기</button>
+    <button id="btnCrouch" class="tbtn">쭈그리기</button>
+    <button id="btnAct" class="tbtn big">상호작용</button>
+  </div>
+</div>
+
+<div id="start" class="overlay">
+  <div class="sub">NIGHT SHIFT · 24H</div>
+  <h1>끝나지 않는<br>야간 근무</h1>
+  <p class="lead">새벽 3시 33분.<br>창고 정리를 마치고, 문손잡이를 잡았다.</p>
+  <button id="startBtn">근무 시작</button>
+  <div class="help desk">WASD 이동 · 마우스 시점 · Shift 뛰기 · C 쭈그리기 · E 상호작용</div>
+  <div class="help mob">왼쪽 드래그 이동 · 오른쪽 드래그 시점 · 버튼으로 행동</div>
+  <p class="tip">이어폰 권장 · 아이폰은 무음 모드를 꺼야 소리가 납니다</p>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <h2>휴게 시간</h2>
+  <p class="lead">클릭해서 근무로 돌아가기</p>
+</div>
+
+<div id="rotate" class="overlay hidden">
+  <div class="phone"></div>
+  <p class="lead">기기를 가로로 돌려주세요</p>
+</div>
+
+<div id="fade"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
