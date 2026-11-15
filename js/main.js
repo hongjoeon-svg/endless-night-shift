@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildWorld, CHUNK, HEIGHT } from './world.js';
 import { Input } from './input.js';
 import { AudioSys } from './audio.js';
+import { buildExit } from './exit.js';
 
 const $ = (id) => document.getElementById(id);
 const DEBUG = new URLSearchParams(location.search).has('debug');
@@ -135,6 +136,7 @@ function getFocus() {
   if (dist < 2.2) {
     const fx = -Math.sin(P.yaw), fz = -Math.cos(P.yaw);
     if ((fx * tx + fz * tz) / dist > 0.3) {
+      if (story.exit && cx === story.exit.cx && cz === story.exit.cz && tz > 0) return { text: '비상구 열기 · 퇴근', act: clearZone };
       if (cx === 0 && cz === 0) return { text: doorOpen ? '창고 문 닫기' : '창고 문 열기', act: toggleDoor };
       return { text: '창고 문', act: () => lockedDoor(ox, oz) };
     }
@@ -168,9 +170,49 @@ function updateStory(cx, cz, lx, lz) {
     const n = story.visited.size;
     if (n === 2) say('여기... 방금 지나온 매장이랑 똑같다.', 4);
     else if (n === 4) say('진열대도, 냉장고도, 계산대도. 전부 똑같다.', 4);
-    else if (n === 7) say('아무리 걸어도 같은 매장이다. 출구를 찾아야 한다.', 4.5);
+    else if (n === EXIT_AFTER) spawnExit(cx, cz);
+    else if (story.exit && n % 6 === 0) say('삐— 삐— 경보음이 들리는 쪽으로 가 보자.', 3.5);
   }
 }
+
+// ---------- 임시 출구 (1구역) ----------
+const EXIT_AFTER = 5; // 서로 다른 매장 5곳을 지나면 출구가 생긴다
+const exitObj = buildExit(W.door);
+scene.add(exitObj.group);
+function spawnExit(cx, cz) {
+  // 바라보는 방향으로 매장 2칸 앞, 시작 매장(0,0)과 현재 매장은 피한다
+  let ex = cx + Math.round(-Math.sin(P.yaw) * 2), ez = cz + Math.round(-Math.cos(P.yaw) * 2);
+  if ((ex === cx && ez === cz) || (ex === 0 && ez === 0)) ex += 2;
+  story.exit = { cx: ex, cz: ez, x: ex * CHUNK + exitObj.worldPos.x, z: ez * CHUNK + exitObj.worldPos.z, beepT: 1.5 };
+  exitObj.group.position.set(ex * CHUNK, 0, ez * CHUNK);
+  exitObj.group.visible = true;
+  say('...삐— 삐— 어디선가 비상구 경보음이 울린다.', 4);
+  say(isTouch ? '이어폰을 끼고 소리가 나는 방향으로 가 보자.' : '소리가 나는 방향으로 가 보자.', 4);
+}
+function updateExit(dt, now) {
+  const e = story.exit;
+  if (!e || story.cleared) return;
+  exitObj.update(now / 1000);
+  e.beepT -= dt;
+  if (e.beepT <= 0) { audio.exitBeep(e.x, 2.4, e.z - 0.3); e.beepT = 2.2; }
+  if (!e.seen && Math.hypot(P.x - e.x, P.z - e.z) < 9) { e.seen = true; say('초록색 비상구 표시등. 저기다!', 3); }
+}
+function clearZone() {
+  if (story.cleared) return;
+  story.cleared = true;
+  audio.exitOpen();
+  try { localStorage.setItem('ens_progress', JSON.stringify({ zone: 2, zone1ClearedAt: Date.now() })); } catch (_) {}
+  setPrompt(null);
+  $('fade').classList.remove('clear');
+  setTimeout(() => {
+    started = false;
+    document.body.classList.remove('playing');
+    if (document.pointerLockElement) document.exitPointerLock();
+    $('clearStores').textContent = story.visited.size;
+    $('clear').classList.remove('hidden');
+  }, 3000);
+}
+$('retryBtn').addEventListener('click', () => location.reload());
 
 // ---------- 형광등 깜빡임 ----------
 let flickT = 3, flickOn = true, flickBurst = 0;
@@ -256,6 +298,7 @@ function update(dt) {
   if (input.consumeAct() && focus) focus.act();
 
   updateStory(cx, cz, lx, lz);
+  updateExit(dt, performance.now());
 
   // 가끔 먼 곳에서 울리는 차임벨 (1구역은 분위기용)
   if (story.leftStock) {

@@ -54,9 +54,9 @@ body.touch.playing #touch { display: block; }
   text-shadow: 0 0 18px rgba(190, 255, 230, .25); }
 .overlay h2 { font-size: 28px; }
 .overlay .lead { font-size: 15px; line-height: 1.7; color: rgba(230,240,235,.75); }
-#startBtn { margin-top: 6px; padding: 13px 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,.4); background: #f1f4ec; color: #111;
+#startBtn, .btn { margin-top: 6px; padding: 13px 38px; border-radius: 6px; border: 1px solid rgba(255,255,255,.4); background: #f1f4ec; color: #111;
   font-size: 17px; font-weight: 700; cursor: pointer; }
-#startBtn:active { transform: scale(.97); }
+#startBtn:active, .btn:active { transform: scale(.97); }
 .help { font-size: 12px; color: rgba(230,240,235,.5); }
 .help.mob { display: none; }
 body.touch .help.mob { display: block; }

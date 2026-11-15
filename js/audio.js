@@ -163,6 +163,33 @@ export class AudioSys {
     setTimeout(() => p.disconnect(), 1000);
   }
 
+  // 비상구 경보음 "삐— 삐—" (위치 사운드: 소리를 따라 찾아가게)
+  exitBeep(x, y, z) {
+    if (!this.ready) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const p = this.panner(2.5, 0.9); this.setP(p, x, y, z);
+    for (const d of [0, 0.32]) {
+      const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 988;
+      const g = this.gain(0);
+      g.gain.setValueAtTime(0.0001, t + d); g.gain.linearRampToValueAtTime(0.16, t + d + 0.01);
+      g.gain.setValueAtTime(0.16, t + d + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.24);
+      o.connect(this.filt('lowpass', 2200)).connect(g).connect(p); o.start(t + d); o.stop(t + d + 0.26);
+    }
+    setTimeout(() => p.disconnect(), 1200);
+  }
+
+  // 퇴근(구역 클리어) 문 열림
+  exitOpen() {
+    if (!this.ready) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    this.click(this.master, t, 0.8);
+    const s = ctx.createBufferSource(); s.buffer = this.white;
+    const g = this.gain(0);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.35, t + 0.3); g.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+    s.connect(this.filt('lowpass', 600)).connect(g).connect(this.master); s.start(t, 0, 2.6);
+    this.master.gain.setTargetAtTime(0, t + 1.5, 0.8);
+  }
+
   // 형광등 깜빡임 틱
   tick(x, y, z) {
     if (!this.ready) return;
